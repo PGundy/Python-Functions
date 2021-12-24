@@ -81,5 +81,7 @@ for i in list(filter(None, test)):
 # ? ## Example 2:
 # ? for i in test:
 # ?     print(i)
+# ? https://pythoncircle.com/post/708/solving-python-error-typeerror-nonetype-object-is-not-iterable/
+# ? Possible work around is to avoid aList.append() as a way to aggregate the lists
 
 # %%
