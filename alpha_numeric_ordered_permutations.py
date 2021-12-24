@@ -72,7 +72,6 @@ test = alpha_numeric_ordered_permutations(
     input_list=["a", "b", "c", "d"], permutation_depth_max=2
 )
 
-
 ##TODO: understand why pylance errors out on example 2: "Object of type "None" cannot be used as iterable value"
 ## Example 1:
 for i in list(filter(None, test)):
