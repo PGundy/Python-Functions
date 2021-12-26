@@ -67,20 +67,34 @@ def alpha_numeric_ordered_permutations(input_list, permutation_depth_max=None):
 
 
 #%%
+if __name__ == "__main__":
 
-test = alpha_numeric_ordered_permutations(
-    input_list=["a", "b", "c", "d"], permutation_depth_max=2
-)
+    test_list1 = ["a", "b", "c", "d"]
+    test_list2 = [4, 2]
 
-##TODO: understand why pylance errors out on example 2: "Object of type "None" cannot be used as iterable value"
-## Example 1:
-for i in list(filter(None, test)):
-    print(i)
+    print("\n\n\nNow for test_list1\n\n")
+    test1 = alpha_numeric_ordered_permutations(
+        input_list=test_list1, permutation_depth_max=2
+    )
 
-# ? ## Example 2:
-# ? for i in test:
-# ?     print(i)
-# ? https://pythoncircle.com/post/708/solving-python-error-typeerror-nonetype-object-is-not-iterable/
-# ? Possible work around is to avoid aList.append() as a way to aggregate the lists
+    ##TODO: understand why pylance errors out on example 2: "Object of type "None" cannot be used as iterable value"
+    ## Example with no pylance issue:
+    for i in list(filter(None, test1)):
+        print(i)
+
+    # ? ## Example of issue with None:
+    # ? for i in test1:
+    # ?     print(i)
+    # ? https://pythoncircle.com/post/708/solving-python-error-typeerror-nonetype-object-is-not-iterable/
+    # ? Possible work around is to avoid aList.append() as a way to aggregate the lists
+
+    print("\n\n\nNow for test_list2\n\n")
+    test2 = alpha_numeric_ordered_permutations(
+        input_list=test_list2, permutation_depth_max=2
+    )
+
+    for i in list(filter(None, test2)):
+        print(i)
+
 
 # %%
