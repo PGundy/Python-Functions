@@ -1,17 +1,15 @@
 #%% packages
+print("required packages: numpy and itertools")
 import numpy as np
 import itertools
-
 
 #%%
 
 
-def alpha_numeric_ordered_permutations(input_list, permutation_depth_max=None):
-    """Generate permutations, sort each permutation alphanumerically and return the unique permutations.
-    
+def alpha_numeric_ordered_permutation(input_list, permutation_depth_max=None):
+    """
     input_list -- np.array, index, list, etc.
     permutation_depth_max -- The maximum length of the permutations. Default is len(input_list).
-    
     
     Example: 
         alpha_numeric_ordered_permutations(input_list = list(["a", "b", "c"]), permutation_depth_max=2)
@@ -73,7 +71,7 @@ if __name__ == "__main__":
     test_list2 = [4, 2]
 
     print("\n\n\nNow for test_list1\n\n")
-    test1 = alpha_numeric_ordered_permutations(
+    test1 = alpha_numeric_ordered_permutation(
         input_list=test_list1, permutation_depth_max=2
     )
 
@@ -89,7 +87,7 @@ if __name__ == "__main__":
     # ? Possible work around is to avoid aList.append() as a way to aggregate the lists
 
     print("\n\n\nNow for test_list2\n\n")
-    test2 = alpha_numeric_ordered_permutations(
+    test2 = alpha_numeric_ordered_permutation(
         input_list=test_list2, permutation_depth_max=2
     )
 
