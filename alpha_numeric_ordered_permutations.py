@@ -61,6 +61,8 @@ def alpha_numeric_ordered_permutation(input_list, permutation_depth_max=None):
                 "permutations with a permutation_depth_max max of",
                 permutation_depth_max,
             )
+
+            permutation_final = list(filter(None, permutation_final))
             return permutation_final
 
 
