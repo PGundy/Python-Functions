@@ -25,8 +25,17 @@ def alpha_numeric_ordered_permutation(
     permutation_interim = []
     permutation_final = []
 
+    input_list = list(set(input_list))
+
     if depth_max is None:
         depth_max = len(input_list)
+
+    if depth_max > len(input_list):
+        print(
+            "The provided depth_max exceeds the maximum possible.",
+            "depth_max is being reset to:",
+            len(input_list),
+        )
 
     if depth_max > 7:
         print(
@@ -77,14 +86,13 @@ def alpha_numeric_ordered_permutation(
 if __name__ == "__main__":
 
     test_list1 = ["a", "b", "c", "d"]
-    test_list2 = [4, 2]
+    test_list2 = [4, 4, 2, 1]
 
     print("\n\n\nNow for test_list1\n\n")
     test1 = alpha_numeric_ordered_permutation(
         input_list=test_list1, depth_max=2
     )
 
-    ##TODO: understand why pylance errors out on example 2: "Object of type "None" cannot be used as iterable value"
     ## Example with no pylance issue:
     for i in list(filter(None, test1)):
         print(i)
@@ -96,6 +104,7 @@ if __name__ == "__main__":
     # ? Possible work around is to avoid aList.append() as a way to aggregate the lists
 
     print("\n\n\nNow for test_list2\n\n")
+    print(test_list2)
     test2 = alpha_numeric_ordered_permutation(
         input_list=test_list2, depth_max=2
     )
@@ -103,5 +112,4 @@ if __name__ == "__main__":
     for i in list(filter(None, test2)):
         print(i)
 
-
-# %%
+#%%
