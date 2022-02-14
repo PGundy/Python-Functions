@@ -1,20 +1,28 @@
-## Project idea to expand on:
-## class object called hotspot
-## inputs would be
-### data -- could
+### Further notes & documentation to be added.
 ##
-## methods
-### return column names or the list given to data -- view options
-### select column names or items from the list -- set input list
-### set depth_maximum
-### generate list of the combinations -- options could include whether to return all or only alphanumeric sorted options
-
-# import example_module_name
-# EX = example_module_name(data = [])
-# EX.viewOption()
-# EX.setOptions()
-# EX.setDepthMax()
-# EX.generatecombinations()
+## Step by step examples in the 'if __name__ == "__main__":' section
+##
+### Basic Outline of code will look similar to the following:
+##
+## CA = ComboAnalysis()
+## CA.inputList = df_key_vars
+## CA.depthMax = 3
+## CA.data = df
+##
+## comboAnalysisList = CA.generateCombos()
+## def exampleFunction(data):
+##      print(data) ## Should reflect your intended computation
+##
+## ComboAnalysisOutput = CA.ComputeCombos(
+##         generatedCombos=CA.generateCombos(),
+##         userFunc=exampleFunction
+##     )
+## ComboAnalysisOutput.sample(n=5)
+##
+## CA.getVarContents(data=ComboAnalysisOutput, varNames="color")
+## CA.FilterListBroadly(data=ComboAnalysisOutput, columnToSearch="col_name", searchList="content")
+##
+##
 
 #%%
 import itertools
