@@ -38,21 +38,36 @@ class ComboAnalysis:
     inputList: list
     depthMax: int
     data: pd.DataFrame
+    combinations: list
+    dataCombos: pd.DataFrame
 
-    def __init__(self, inputList=None, depthMax=None, data=None):
+    def __init__(
+        self,
+        inputList=None,
+        depthMax=int,
+        inputData=pd.DataFrame(None),
+        combinations=list,
+        completedComboAnalysis=pd.DataFrame(None),
+    ):
         self.inputList = inputList
         self.depthMax = depthMax
-        self.data = data
+        self.inputData = inputData
+        self.combinations = combinations
+        self.completedComboAnalysis = completedComboAnalysis
 
     ## check the input values
     def checkInputs(self):
         print("Below are the currently defined inputs:")
-        print("     inputList:", self.inputList)
-        print("     depthMax:", self.depthMax)
-        print("     data:", self.data)
+        print(f"     inputList: {self.inputList}\n")
+        print(f"     depthMax: {self.depthMax}\n\n")
+        print(f"     inputData: {self.inputData.head()}\n\n")
+        print(f"     combinations: {self.combinations}\n\n")
+        print(
+            f"     completedComboAnalysis: {self.completedComboAnalysis}"
+        )
 
     ## get the list of alphanumerically sorted combinations
-    def generateCombos(self):
+    def createCombos(self):
 
         if self.inputList is None:
             raise ValueError("inputList is set to None")
@@ -92,24 +107,34 @@ class ComboAnalysis:
                     self.depthMax,
                 )
 
-                return list(filter(None, combination_final))
+                self.combinations = list(filter(None, combination_final))
 
-    ## Iterate using userFunc & data using groupby(Combos)
-    def ComputeCombos(self, generatedCombos, userFunc):
+                return print(
+                    f"The combinations are calculated using a depthMax of {self.depthMax} & the following variables: {self.inputList}\n\n\n"
+                )
+
+    ## print the combinations created from 'createCombos'
+    def viewCombos(self):
+        return self.combinations
+
+    ## Iterate using userFunc & inputData using groupby(Combos)
+    def runComboAnalysis(self, userFunc):
         result = []
         resultList = []
-        for step_i, grp_var_i in enumerate(generatedCombos):
+        dataCopyForLoop = self.inputData.copy()
+        for step_i, grp_var_i in enumerate(self.combinations):
             print(
                 "Step:",
                 step_i,
                 "of",
-                len(generatedCombos) - 1,
+                len(self.combinations) - 1,
                 " -- Grouped by:",
                 grp_var_i,
             )
 
             ## Run the calculations for each step
-            groupedData = self.data.groupby(grp_var_i)
+
+            groupedData = dataCopyForLoop.groupby(grp_var_i)
             result = userFunc(groupedData)
 
             ## Create variables to create 'clean' columns
@@ -131,10 +156,9 @@ class ComboAnalysis:
             ### Create the list zip("grouped_vars","grouped_values")
             for row in np.arange(0, len(result), 1):
 
-                ## create empty pd.Series t
+                ## create empty pd.Series -- Then loop builds it
                 if row == 0:
                     result["grouped_clean"] = pd.Series(dtype=str)
-
                 ###
                 ### KNOWN BUG WITH CHAINED INDEXING
                 ###
@@ -164,29 +188,64 @@ class ComboAnalysis:
             ## Final step in the loop
             resultList.append(result)
             result = []
-        return pd.concat(resultList).reset_index(drop=True)
+            resultDataFrame = pd.concat(resultList).reset_index(drop=True)
+            self.completedComboAnalysis = resultDataFrame
+
+    ## simple export of the data object
+    def exportComboAnalysisData(self):
+        return self.completedComboAnalysis
+
+    ## Return all the viable variable names
+    def getVarNames(self):
+        temp = ComboAnalysisData[ComboAnalysisData["depth"].isin([1])][
+            "grouped_vars"
+        ]
+
+        ## TODO change the below to return a df with cols: 'varNames' & 'unique_values'
+        return temp.explode().value_counts()
 
     ## Return all rows for a variable to see the content of the variable
-    def getVarContents(self, data, varNames):
+    def getVarContents(self, varNames):
         if isinstance(varNames, str):
             varNames = [varNames]
-        temp = data[data["grouped_vars"].apply(set(varNames).issuperset)]
+        temp = self.completedComboAnalysis[
+            self.completedComboAnalysis["grouped_vars"].apply(
+                set(varNames).issuperset
+            )
+        ]
         temp = temp[temp["depth"].isin([1])]
         return temp
 
     ## Filter to rows to any input variables
-    def FilterListBroadly(
-        self, data, columnToSearch: str, searchList, depth_filter=None
+    def filterListBroadly(
+        self, columnToSearch: str, searchList, data=None, depth_filter=None
     ):
+        ## Are you searching the full analysis or a chosen subset?
+        if data is None:
+            searchData = self.completedComboAnalysis
+        else:
+            searchData = data
+
+        ## required transformation for easier searching
         if isinstance(searchList, str):
             searchList = [searchList]
+
+        ## return error if not searching a list
+        if not isinstance(searchList, list):
+            ValueError(
+                "The object provided to search_list is not a list. Nor a string capable of being transformed into a list"
+            )
 
         searchResult = []
         for searchTerm in searchList:
             searchResult.append(
-                data[[searchTerm in x for x in data[columnToSearch]]]
+                searchData[
+                    [searchTerm in x for x in searchData[columnToSearch]]
+                ]
             )
         searchResult = pd.concat(searchResult)
+
+        ## TODO: improve depth_filter to take a list of ints
         if depth_filter is not None:
             searchResult = searchResult[
                 searchResult["depth"].isin([depth_filter])
@@ -197,21 +256,30 @@ class ComboAnalysis:
         return searchResult.copy()
 
     ## Filter rows in a more strict manner. Only complete matches
-    def FilterListStrictly(
-        self, data, columnToSearch: str, searchList, depth_filter=None
+    def filterListStrictly(
+        self, columnToSearch: str, searchList, data=None, depth_filter=None
     ):
+        ## Are you searching the full analysis or a chosen subset?
+        if data is None:
+            searchData = self.completedComboAnalysis
+        else:
+            searchData = data
+
+        ## required transformation for easier searching
         if isinstance(searchList, str):
             searchList = [searchList]
 
-        ## return error if not list
+        ## return error if not searching a list
         if not isinstance(searchList, list):
             ValueError(
                 "The object provided to search_list is not a list. Nor a string capable of being transformed into a list"
             )
 
         searchResult = []
-        searchResult = data[
-            data[columnToSearch].apply(set(searchList).issuperset)
+        searchResult = self.completedComboAnalysis[
+            self.completedComboAnalysis[columnToSearch].apply(
+                set(searchList).issuperset
+            )
         ]
 
         if depth_filter is not None:
@@ -245,9 +313,9 @@ if __name__ == "__main__":
     CA = ComboAnalysis()
     CA.inputList = df_key_vars
     CA.depthMax = 3
-    CA.data = df
-
-    comboAnalysisList = CA.generateCombos()
+    CA.inputData = df
+    CA.createCombos()
+    CA.viewCombos()
 
     ###################################
     # Below are examples evaluating the comboAnalysis
@@ -265,62 +333,61 @@ if __name__ == "__main__":
             med_price=pd.NamedAgg("price", np.median),
         )
 
-    ComboAnalysisOutput = CA.ComputeCombos(
-        generatedCombos=CA.generateCombos(), userFunc=exampleFunction
-    )
-    ComboAnalysisOutput.sample(n=5)
+    CA.runComboAnalysis(userFunc=exampleFunction)
+    ComboAnalysisData = CA.exportComboAnalysisData()
+
+    CA.getVarNames()
 
     ## Example of how to view contents of any particular variable
-    CA.getVarContents(data=ComboAnalysisOutput, varNames="color")
+    CA.getVarContents(varNames="color")
 
     ## Return all rows where 'color' appears - 54 rows
-    CA.FilterListBroadly(
-        data=ComboAnalysisOutput,
+    CA.filterListBroadly(
+        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList="color: H",
     )
 
     ## Return all rows where ONLY 'color' appears - only 1 row
-    CA.FilterListStrictly(
-        data=ComboAnalysisOutput,
+    CA.filterListStrictly(
+        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList="color: H",
     )
 
     ## Return all rows with these values
-    CA.FilterListBroadly(
-        data=ComboAnalysisOutput,
+    CA.filterListBroadly(
+        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList=["color: H", "color: D", "cut: Very Good"],
     )
 
     ## Return only rows with these values -- Note the interactions
-    CA.FilterListStrictly(
-        data=ComboAnalysisOutput,
+    CA.filterListStrictly(
+        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList=["color: H", "color: D", "cut: Very Good"],
     )
 
     ## Example of multistep filtering
     ### Step 1 Limit to any row with 'cut'
-    filter_df_step1 = CA.FilterListBroadly(
-        data=ComboAnalysisOutput,
-        columnToSearch="grouped_vars",
-        searchList="cut",
+    filter_df_step1 = CA.filterListBroadly(
+        columnToSearch="grouped_clean", searchList="cut: Ideal",
     )
 
     ### Step 2 limit to all rows of 'color:H' from rows with 'cut'
-    filter_df_step2 = CA.FilterListBroadly(
+    filter_df_step2 = CA.filterListBroadly(
         data=filter_df_step1,
         columnToSearch="grouped_clean",
         searchList="color: H",
     )
-    filter_df_step2
+
+    filter_df_step2.head()
     ## Example of converting lists to delimited string
-    CA.listToString(ComboAnalysisOutput["grouped_clean"].tail(5))
-    CA.listToString(
-        ComboAnalysisOutput["grouped_clean"].tail(5), delimiter="; "
-    )
+    # CA.listToString(ComboAnalysisData["grouped_clean"].tail(5))
+    # CA.listToString(
+    #    ComboAnalysisData["grouped_clean"].tail(5), delimiter="; "
+    # )
 
 
 # %%
