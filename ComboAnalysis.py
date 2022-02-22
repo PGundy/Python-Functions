@@ -185,7 +185,7 @@ class ComboAnalysis:
                     + result_col_names
                 ]
 
-            ## Final step in the loop
+            ## Final step - build the aggregated object
             resultList.append(result)
             result = []
             resultDataFrame = pd.concat(resultList).reset_index(drop=True)
@@ -343,28 +343,22 @@ if __name__ == "__main__":
 
     ## Return all rows where 'color' appears - 54 rows
     CA.filterListBroadly(
-        # data=ComboAnalysisData,
-        columnToSearch="grouped_clean",
-        searchList="color: H",
+        columnToSearch="grouped_clean", searchList="color: H",
     )
 
     ## Return all rows where ONLY 'color' appears - only 1 row
     CA.filterListStrictly(
-        # data=ComboAnalysisData,
-        columnToSearch="grouped_clean",
-        searchList="color: H",
+        columnToSearch="grouped_clean", searchList="color: H",
     )
 
     ## Return all rows with these values
     CA.filterListBroadly(
-        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList=["color: H", "color: D", "cut: Very Good"],
     )
 
     ## Return only rows with these values -- Note the interactions
     CA.filterListStrictly(
-        # data=ComboAnalysisData,
         columnToSearch="grouped_clean",
         searchList=["color: H", "color: D", "cut: Very Good"],
     )
@@ -383,6 +377,7 @@ if __name__ == "__main__":
     )
 
     filter_df_step2.head()
+
     ## Example of converting lists to delimited string
     # CA.listToString(ComboAnalysisData["grouped_clean"].tail(5))
     # CA.listToString(
