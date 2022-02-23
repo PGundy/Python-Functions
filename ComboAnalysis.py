@@ -5,7 +5,7 @@
 ### Basic Outline of code will look similar to the following:
 ##
 ## CA = ComboAnalysis()
-## CA.inputList = df_key_vars
+## CA.inputColNames = df_key_vars
 ## CA.depthMax = 3
 ## CA.data = df
 ##
@@ -35,21 +35,21 @@ import pandas as pd
 
 
 class ComboAnalysis:
-    inputList: list
+    inputColNames: list
     depthMax: int
-    data: pd.DataFrame
+    inputData: pd.DataFrame
     combinations: list
     dataCombos: pd.DataFrame
 
     def __init__(
         self,
-        inputList=None,
+        inputColNames=list(),
         depthMax=int,
         inputData=pd.DataFrame(None),
-        combinations=list,
+        combinations=list(),
         completedComboAnalysis=pd.DataFrame(None),
     ):
-        self.inputList = inputList
+        self.inputColNames = inputColNames
         self.depthMax = depthMax
         self.inputData = inputData
         self.combinations = combinations
@@ -58,7 +58,7 @@ class ComboAnalysis:
     ## check the input values
     def checkInputs(self):
         print("Below are the currently defined inputs:")
-        print(f"     inputList: {self.inputList}\n")
+        print(f"     inputColNames: {self.inputColNames}\n")
         print(f"     depthMax: {self.depthMax}\n\n")
         print(f"     inputData: {self.inputData.head()}\n\n")
         print(f"     combinations: {self.combinations}\n\n")
@@ -69,8 +69,8 @@ class ComboAnalysis:
     ## get the list of alphanumerically sorted combinations
     def createCombos(self):
 
-        if self.inputList is None:
-            raise ValueError("inputList is set to None")
+        if self.inputColNames is None:
+            raise ValueError("inputColNames is set to None")
         if self.depthMax is None:
             raise ValueError("depthMax is set to None")
 
@@ -79,7 +79,7 @@ class ComboAnalysis:
 
         for i in np.arange(0, self.depthMax, 1) + 1:
             combinations = list(
-                itertools.combinations(self.inputList, int(i))
+                itertools.combinations(self.inputColNames, int(i))
             )
             combinations = list(map(list, combinations))
             combinations.sort()
@@ -110,7 +110,7 @@ class ComboAnalysis:
                 self.combinations = list(filter(None, combination_final))
 
                 return print(
-                    f"The combinations are calculated using a depthMax of {self.depthMax} & the following variables: {self.inputList}\n\n\n"
+                    f"The combinations are calculated using a depthMax of {self.depthMax} & the following variables:\n{self.inputColNames}\n\n\n"
                 )
 
     ## print the combinations created from 'createCombos'
@@ -292,13 +292,18 @@ class ComboAnalysis:
         ##searchResult.reset_index(inplace=True, drop=True)
         return searchResult.copy()
 
-    def listToString(self, inputList, delimiter=None):
+    def listToString(self, inputColName, data=None, delimiter=None):
         delimiter: str
 
         if delimiter is None:
             delimiter = " -- "
 
-        return inputList.apply(lambda x: delimiter.join(map(str, x)))
+        if data is None:
+            data = self.completedComboAnalysis
+
+        return data[inputColName].apply(
+            lambda x: delimiter.join(map(str, x))
+        )
 
 
 # %%
@@ -311,7 +316,7 @@ if __name__ == "__main__":
     df_key_vars = list(df.select_dtypes(include=["category"]).columns)
 
     CA = ComboAnalysis()
-    CA.inputList = df_key_vars
+    CA.inputColNames = df_key_vars
     CA.depthMax = 3
     CA.inputData = df
     CA.createCombos()
@@ -378,11 +383,11 @@ if __name__ == "__main__":
 
     filter_df_step2.head()
 
-    ## Example of converting lists to delimited string
-    # CA.listToString(ComboAnalysisData["grouped_clean"].tail(5))
-    # CA.listToString(
-    #    ComboAnalysisData["grouped_clean"].tail(5), delimiter="; "
-    # )
 
+## Example of converting lists to delimited string
+# CA.listToString(ComboAnalysisData["grouped_clean"].tail(5))
+# CA.listToString(
+#    ComboAnalysisData["grouped_clean"].tail(5), delimiter="; "
+# )
 
-# %%
+#%%
