@@ -161,7 +161,6 @@ class ComboAnalysis:
                     result["grouped_clean"] = pd.Series(dtype=str)
                 ###
                 ### KNOWN BUG WITH CHAINED INDEXING
-                ###
                 ### TODO: Is this solvable with pd.Series of lists?
                 ###
                 result["grouped_clean"][row] = [
@@ -200,9 +199,11 @@ class ComboAnalysis:
         temp = ComboAnalysisData[ComboAnalysisData["depth"].isin([1])][
             "grouped_vars"
         ]
+        temp2 = temp.explode().value_counts().reset_index()
+        temp2.columns = ["grouped_vars", "CountD_grouped_values"]
 
         ## TODO change the below to return a df with cols: 'varNames' & 'unique_values'
-        return temp.explode().value_counts()
+        return temp2
 
     ## Return all rows for a variable to see the content of the variable
     def getVarContents(self, varNames):
@@ -391,3 +392,20 @@ if __name__ == "__main__":
 # )
 
 #%%
+ComboAnalysisData = CA.exportComboAnalysisData()
+
+temp = ComboAnalysisData[ComboAnalysisData["depth"].isin([1])][
+    "grouped_vars"
+]
+
+## TODO change the below to return a df with cols: 'varNames' & 'unique_values'
+temp.explode().value_counts()
+
+
+# %%
+
+temp2 = ComboAnalysisData.groupby("grouped_vars")
+temp3 = pd.DataFrame()
+
+
+# %%
